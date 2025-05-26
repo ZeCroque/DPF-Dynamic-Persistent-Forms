@@ -2,7 +2,7 @@
 
 namespace DPF
 {
-	void Init(RE::FormID inFormId, const std::string& inPluginName);
+	void Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension);
 
 	void SaveCache(const SKSE::MessagingInterface::Message* inMessage);
 

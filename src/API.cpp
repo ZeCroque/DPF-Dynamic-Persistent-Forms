@@ -6,14 +6,17 @@
 
 namespace DPF
 {
-	void Init(RE::FormID inFormId, const std::string& inPluginName)
+	std::string coSaveExtension = "dpf";
+
+	void Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension)
 	{
 	    firstFormId = lastFormId = ReadFirstFormIdFromESP(inFormId, inPluginName);
+		coSaveExtension = inCoSaveExtension;
 	}
 
 	void SaveCache(const SKSE::MessagingInterface::Message* inMessage) {
 		std::string name = static_cast<char*>(inMessage->data);
-		name = name.append(".sqg");
+		name = name.append("." + coSaveExtension);
 	    FileWriter fileWriter(name, std::ios::out | std::ios::binary | std::ios::trunc);
 
 	    if (!fileWriter.IsOpen()) {
@@ -25,7 +28,7 @@ namespace DPF
 
 	void LoadCache(const SKSE::MessagingInterface::Message* inMessage) {
 		std::string name = static_cast<char*>(inMessage->data);
-		name = name.substr(0, name.size() - 3).append("sqg");
+		name = name.substr(0, name.size() - 3).append("." + coSaveExtension);
 		FileReader fileReader(name, std::ios::in | std::ios::binary);
 
 	    if (!fileReader.IsOpen()) {
@@ -38,7 +41,7 @@ namespace DPF
 
 	void DeleteCache(const SKSE::MessagingInterface::Message* inMessage) {
 		std::string name = static_cast<char*>(inMessage->data);
-		name = name.append(".sqg");
+		name = name.append("." + coSaveExtension);
 	    Delete(name);
 	}
 
