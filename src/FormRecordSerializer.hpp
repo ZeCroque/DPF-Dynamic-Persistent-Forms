@@ -99,19 +99,20 @@ namespace DPF
 	    auto modelForm = serializer->ReadFormRef();
 	    auto id = serializer->ReadFormId();
 	    serializer->finishReadingSection();
+
+		RE::TESForm* form;
 	    if(!formData.contains(id))
 	    {
-	        AddForm(baseForm, id);
+	        form = AddForm(baseForm, id);
 	    }
-	    else if(auto& instance = formData[id]; instance.formType != baseForm->GetFormType() || instance.deleted)
+	    else if(auto& instance = formData[id]; baseForm && instance.formType != baseForm->GetFormType() || instance.deleted)
 	    {
 		    auto factory = RE::IFormFactory::GetFormFactoryByType(baseForm->GetFormType());
-	        RE::TESForm* current = factory->Create();
-	        current->SetFormID(id, false);
-	        instance.Undelete(current, baseForm->GetFormType());
+	        form = factory->Create();
+	        form->SetFormID(id, false);
+	        instance.Undelete(form, baseForm->GetFormType());
 	    }
-
-	    return true;
+	    return form != nullptr;
 	}
 
 	template <typename T>
