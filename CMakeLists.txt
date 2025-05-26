@@ -47,7 +47,6 @@ set(PRIVATE_HEADERS
 	${SOURCE_DIR}/FormRecordSerializer.h
 	${SOURCE_DIR}/FormSerializers.h
 	${SOURCE_DIR}/Model.h
-	${SOURCE_DIR}/SKSETmp.h
 )
 
 set(HPP
@@ -102,6 +101,11 @@ set_target_properties("${PROJECT_NAME}"
     PROPERTIES
 		VS_DEBUGGER_COMMAND J:/100Install/mo2/ModOrganizer.exe
 		VS_DEBUGGER_COMMAND_ARGUMENTS  "-p \"SQGLib\" \"moshortcut://SkyrimSE:Skyrim Special Edition\""
+)
+
+target_compile_definitions("${PROJECT_NAME}"
+	PRIVATE 
+		RUNTIME_VERSION=0x01061430
 )
 
 target_compile_features(

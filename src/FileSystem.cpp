@@ -1,6 +1,44 @@
 #include "FileSystem.h"
 
-#include "SKSETmp.h"
+//From skse64_common/skse_version.h & skse64/Serialization.h
+
+#include <shlobj_core.h>
+
+#define GET_EXE_VERSION_SUB(a)		(((a) & 0x0000000F) >> 0)
+
+#define RUNTIME_TYPE_BETHESDA	0
+#define RUNTIME_TYPE_GOG		1
+#define RUNTIME_TYPE_EPIC		2
+
+#if GET_EXE_VERSION_SUB(RUNTIME_VERSION) == RUNTIME_TYPE_BETHESDA
+#define SAVE_FOLDER_NAME "Skyrim Special Edition"
+#elif GET_EXE_VERSION_SUB(RUNTIME_VERSION) == RUNTIME_TYPE_GOG
+#define SAVE_FOLDER_NAME "Skyrim Special Edition GOG"
+#elif GET_EXE_VERSION_SUB(RUNTIME_VERSION) == RUNTIME_TYPE_EPIC
+#define SAVE_FOLDER_NAME "Skyrim Special Edition EPIC"
+#else
+#error unknown runtime type
+#endif
+
+const char * kSavegamePath = "\\My Games\\" SAVE_FOLDER_NAME "\\";
+
+std::string MakeSavePath(std::string name)
+{
+	char	path[MAX_PATH];
+	SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS, NULL, SHGFP_TYPE_CURRENT, path);
+
+	std::string	result = path;
+	result += kSavegamePath;
+	RE::Setting* localSavePath = RE::GetINISetting("sLocalSavePath:General");
+	if(localSavePath && (localSavePath->GetType() == RE::Setting::Type::kString))
+		result += localSavePath->data.s;
+	else
+		result += "Saves\\";
+
+	result += "\\";
+	result += name;
+    return result;
+}
 
 namespace DPF
 {
