@@ -100,7 +100,7 @@ namespace DPF
 	    auto id = serializer->ReadFormId();
 	    serializer->finishReadingSection();
 
-		RE::TESForm* form;
+		RE::TESForm* form = nullptr;
 	    if(!formData.contains(id))
 	    {
 	        form = AddForm(baseForm, id);
