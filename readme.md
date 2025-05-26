@@ -1,11 +1,25 @@
-## Description
+This is a basic plugin template for use with CommonLibSSE
 
-If you want to compile this project [this](https://www.youtube.com/playlist?list=PLektTyeQhBZeDIRp2g15SsK1GX2Ig8YVW) playlist that i found made by [Skyrim Scripting](https://www.youtube.com/@SkyrimScripting) might help you get started
+## Requirements
+* [CMake](https://cmake.org/)
+	* Add this to your `PATH`
+* [The Elder Scrolls V: Skyrim Special Edition](https://store.steampowered.com/app/489830)
+	* Add the environment variable `Skyrim64Path` to point to the root installation of your game directory (the one containing `SkyrimSE.exe`).
+* [Vcpkg](https://github.com/microsoft/vcpkg)
+	* Add the environment variable `VCPKG_ROOT` with the value as the path to the folder containing vcpkg
+* [Visual Studio Community 2022](https://visualstudio.microsoft.com/)
+	* Desktop development with C++
 
-## Folder structure
+## Building
+```
+git clone https://github.com/Ryan-rsm-McKenzie/ExamplePlugin-CommonLibSSE
+cd ExamplePlugin-CommonLibSSE
+git submodule init
+git submodule update
+cmake --preset vs2022-windows
+cmake --build build --config Release
+```
 
-- DIST: The files uploaded to nexus
-- Examples: The source code of the examples
-- PapyrusInterface: The source code that is responsable to comunicate with skse
-- SKSE_Plugin: The soruce code of the plugin that does the logic behind this project
-- bbcodepapyruscolor: A node js application that takes a papyrus project folder as an input and generates code colored snippets (the supported instructions are currently non exaustive)
+## Tips
+* Set `COPY_OUTPUT` to `ON` to automatically copy the built dll to the game directory, i.e. `cmake --preset vs2022-windows -DCOPY_OUTPUT=ON`
+* Build the `package` target to automatically build and zip up your dll in a ready-to-distribute format.

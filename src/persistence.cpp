@@ -1,96 +1,41 @@
-#pragma once
-#include "model.cpp"
-#include "form.cpp"
-#include "serializer.cpp"
-#include "form_serializer.cpp"
-#include "form_record_serializer.cpp"
+#include "DPF/API.h"
 
-std::mutex callbackMutext;
+#include "FormCreator.h"
+#include "FileSystem.h"
+#include "FormRecordSerializer.h"
 
-void LoadCache();
-void SaveCache();
-
-
-static void SaveCallback(SKSE::SerializationInterface* a_intfc) {
-    std::lock_guard<std::mutex> lock(callbackMutext);
-    try {
-        print("SAVE CAllBACK");
-        if (!a_intfc->OpenRecord('ARR_', 1)) {
-            print("Failed to open record for arr!");
-        } else {
-            auto serializer = new SaveDataSerializer(a_intfc);
-            StoreAllFormRecords(serializer);
-        }
-        SaveCache();
-    } catch (const std::exception&) {
-        print("error saving");
-    }
+void Init()
+{
+    firstFormId = lastFormId = ReadFirstFormIdFromESP();
 }
 
-static void LoadCallback(SKSE::SerializationInterface* a_intfc) {
-    std::lock_guard<std::mutex> lock(callbackMutext);
-    try {
-        print("LOAD CAllBACK");
+void SaveCache(std::string name) {
 
-        uint32_t type;
-        uint32_t version;
-        uint32_t length;
-        bool refreshGame = false;
+    FileWriter fileWriter(name, std::ios::out | std::ios::binary | std::ios::trunc);
 
-        while (a_intfc->GetNextRecordInfo(type, version, length)) {
-            switch (type) {
-                case 'ARR_': {
-                    auto serializer = new SaveDataSerializer(a_intfc);
-                    refreshGame = RestoreAllFormRecords(serializer);
-                    delete serializer;
-                } break;
-                default:
-                    print("Unrecognized signature type!");
-                    break;
-            }
-        }
-        if (refreshGame) {
-            SaveCache();
-            UpdateId();
-            RE::PlayerCharacter::GetSingleton()->KillImmediate();
-        }
-
-
-        print("CAllBACK LOADED");
-    } catch (const std::exception&) {
-        print("error loading");
-    }
-}
-void SaveCache() {
-    print("save cache");
-
-    auto fileWriter = new FileWriter("DynamicPersistentFormsCache.bin", std::ios::out | std::ios::binary | std::ios::trunc);
-
-    if (!fileWriter->IsOpen()) {
-        print("File not found");
+    if (!fileWriter.IsOpen()) {
         return;
     }
 
-    StoreAllFormRecords(fileWriter);
-
-    delete fileWriter;
-
-    print("Property data has been written to file successfully.");
+    StoreAllFormRecords(&fileWriter);
 }
 
-void LoadCache() {
-    print("LOAD CACHE");
-    auto fileReader = new FileReader("DynamicPersistentFormsCache.bin", std::ios::in | std::ios::binary);
+void LoadCache(std::string name) {
+    FileReader fileReader(name, std::ios::in | std::ios::binary);
 
-    if (!fileReader->IsOpen()) {
-        print("File not found");
+    if (!fileReader.IsOpen()) {
         return;
     }
-    RestoreAllFormRecords(fileReader);
+    RestoreAllFormRecords(&fileReader);
 
     UpdateId();
+}
 
-    delete fileReader;
+void DeleteCache(std::string name) {
+    Delete(name);
+}
 
-    print("Property data has been loaded from file successfully.");
+RE::TESForm* CreateForm(RE::TESForm* inModelForm)
+{
+	return AddForm(inModelForm);
 }

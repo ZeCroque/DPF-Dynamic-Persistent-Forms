@@ -1,5 +1,10 @@
-.idea
-.vs
-.vscode/settings.json
-build
-cmake-build*
+build/
+*.ignore.*
+*.ignore
+.vscode/
+*.pex
+SSEEdit Backups
+SSEEdit Cache
+meta.ini
+Release
+SKSE

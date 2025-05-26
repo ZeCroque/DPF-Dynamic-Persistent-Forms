@@ -1,69 +1,175 @@
-# It's recommended to set a minimum CMake version.
-# If you use CMake features from higher versions, update this to match.
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 
-# Set your project name. This will be the name of your SKSE .dll file.
-project(DynamicPersistentForms VERSION 0.0.1 LANGUAGES CXX)
+project(
+	DPFLib
+	VERSION 1.0.0
+	LANGUAGES CXX
+)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# #
-# YOU DO NOT NEED TO EDIT ANYTHING BELOW HERE
-# #
-
-# If you're not using a mod manager, you probably want the SKSE plugin to go
-# inside of your Skyrim "Data" folder.
-#
-# To do this automatically, set the `SKYRIM_FOLDER` environment variable
-# to the path of your Skyrim Special Edition folder
-if(DEFINED ENV{SKYRIM_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_FOLDER}/Data")
-    set(OUTPUT_FOLDER "$ENV{SKYRIM_FOLDER}/Data")
+if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
+	message(FATAL_ERROR "in-source builds are not allowed")
 endif()
 
-# If you're using Mod Organizer 2 or Vortex, you might want this to go inside
-# of your "mods" folder, inside of a subfolder named "<your mod>".
-#
-# To do this automatically, set the `SKYRIM_MODS_FOLDER` environment variable
-# to the path of your "mods" folder
-if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
-    set(OUTPUT_FOLDER "$ENV{SKYRIM_MODS_FOLDER}/${PROJECT_NAME}")
+macro(set_from_environment VARIABLE)
+	if(NOT DEFINED ${VARIABLE} AND DEFINED ENV{${VARIABLE}})
+		set(${VARIABLE} $ENV{${VARIABLE}})
+	endif()
+endmacro()
+
+set_from_environment(Skyrim64Path)
+if(NOT DEFINED Skyrim64Path)
+	message(FATAL_ERROR "Skyrim64Path is not set")
 endif()
 
-# Otherwise, you can set OUTPUT_FOLDER to any place you'd like :)
-# set(OUTPUT_FOLDER "C:/path/to/any/folder")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-# Setup your SKSE plugin as an SKSE plugin!
-find_package(CommonLibSSE CONFIG REQUIRED)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes/)
 
-add_commonlibsse_plugin(${PROJECT_NAME} SOURCES plugin.cpp ) # <--- specifies plugin.cpp
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23) # <--- use C++23 standard
-target_precompile_headers(${PROJECT_NAME} PRIVATE PCH.h) # <--- PCH.h is required!
+set(VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/includes/Plugin.h")
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Plugin.h.in"
+	"${VERSION_HEADER}"
+	@ONLY
+)
 
+set(HEADERS
+	${HEADER_DIR}/DPF/API.h
+)
 
-# When your SKSE .dll is compiled, this will automatically copy the .dll into your mods folder.
-# Only works if you configure DEPLOY_ROOT above (or set the SKYRIM_MODS_FOLDER environment variable)
-if(DEFINED OUTPUT_FOLDER)
-    # If you specify an <OUTPUT_FOLDER> (including via environment variables)
-    # then we'll copy your mod files into Skyrim or a mod manager for you!
+set(HPP
+	${SOURCE_DIR}/FileSystem.hpp
+	${SOURCE_DIR}/FormRecordSerializer.hpp
+	${SOURCE_DIR}/FormSerializers.hpp
+)
 
-    # Copy the SKSE plugin .dll files into the SKSE/Plugins/ folder
-    set(DLL_FOLDER "${OUTPUT_FOLDER}/SKSE/Plugins")
+set(SOURCES
+	${SOURCE_DIR}/PCH.h
+	${SOURCE_DIR}/API.cpp
+	${SOURCE_DIR}/FileSystem.h
+	${SOURCE_DIR}/FileSystem.cpp
+	${SOURCE_DIR}/FormCreator.h
+	${SOURCE_DIR}/FormCreator.cpp
+	${SOURCE_DIR}/FormRecord.h
+	${SOURCE_DIR}/FormRecord.cpp
+	${SOURCE_DIR}/FormRecordSerializer.h
+	${SOURCE_DIR}/FormSerializers.h
+	${SOURCE_DIR}/Model.h
+	${SOURCE_DIR}/Model.cpp
+	${SOURCE_DIR}/SKSETmp.h
+	${HPP}
+)
 
-    message(STATUS "SKSE plugin output folder: ${DLL_FOLDER}")
+set_source_files_properties(${HPP} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-    add_custom_command(
-        TARGET "${PROJECT_NAME}"
-        POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
-        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
-        VERBATIM
-    )
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/version.rc"
+	@ONLY
+)
 
-    # If you perform a "Debug" build, also copy .pdb file (for debug symbols)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_custom_command(
-            TARGET "${PROJECT_NAME}"
-            POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
-            VERBATIM
-        )
-    endif()
+file(COPY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Template.ChildProcessDbgSettings ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.ChildProcessDbgSettings)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${SOURCES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/includes PREFIX "Header Files" FILES ${HEADERS})
+
+add_library( #TODO Standalone version
+	"${PROJECT_NAME}"
+	STATIC
+	${HEADERS}
+	${SOURCES}
+	"${VERSION_HEADER}"
+	"${CMAKE_CURRENT_BINARY_DIR}/version.rc"
+)
+
+set_property(DIRECTORY
+	PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}"
+)
+
+set_target_properties("${PROJECT_NAME}"
+    PROPERTIES
+		VS_DEBUGGER_COMMAND J:/100Install/mo2/ModOrganizer.exe
+		VS_DEBUGGER_COMMAND_ARGUMENTS  "-p \"SQGLib\" \"moshortcut://SkyrimSE:Skyrim Special Edition\""
+)
+
+target_compile_features(
+	"${PROJECT_NAME}"
+	PRIVATE
+		cxx_std_20
+)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	target_compile_options(
+		"${PROJECT_NAME}"
+		PRIVATE
+			"/sdl"	# Enable Additional Security Checks
+			"/utf-8"	# Set Source and Executable character sets to UTF-8
+			"/Zi"	# Debug Information Format
+
+			"/permissive-"	# Standards conformance
+			"/Zc:preprocessor"	# Enable preprocessor conformance mode
+
+			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
+
+			"$<$<CONFIG:DEBUG>:>"
+			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
+	)
+
+	target_link_options(
+		"${PROJECT_NAME}"
+		PRIVATE
+			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
+			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
+	)
 endif()
+
+target_include_directories(
+	"${PROJECT_NAME}"
+	PRIVATE
+		${CMAKE_CURRENT_BINARY_DIR}/includes
+		${SOURCE_DIR}
+	PUBLIC
+		${HEADER_DIR}
+)	
+
+if(NOT TARGET CommonLibSSE::CommonLibSSE)
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/CommonLibSSE" CommonLibSSE EXCLUDE_FROM_ALL)
+endif()
+
+target_link_libraries(
+	"${PROJECT_NAME}"
+	PRIVATE
+		CommonLibSSE::CommonLibSSE
+)
+
+target_precompile_headers(
+	"${PROJECT_NAME}"
+	PRIVATE
+		${SOURCE_DIR}/PCH.h
+)	
+
+# TODO standalone version
+# install(
+# 	FILES
+# 		"$<TARGET_FILE:${PROJECT_NAME}>"
+# 	DESTINATION "SKSE/Plugins"
+# 	COMPONENT "main"
+# )
+
+# install(
+# 	FILES
+# 		"$<TARGET_PDB_FILE:${PROJECT_NAME}>"
+# 	DESTINATION "/"
+# 	COMPONENT "pdbs"
+# )
+
+# add_custom_command(
+# 	TARGET "${PROJECT_NAME}"
+# 	POST_BUILD
+# 	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${CMAKE_CURRENT_SOURCE_DIR}/Data/SKSE/Plugins/"
+# 	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${CMAKE_CURRENT_SOURCE_DIR}/Data/SKSE/Plugins/"
+# 	VERBATIM
+# )
+
+include(cmake/packaging.cmake)
