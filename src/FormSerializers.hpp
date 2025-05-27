@@ -398,17 +398,19 @@ namespace DPF
 
 	    serializer->Write<uint32_t>(static_cast<uint32_t>(filters.size()));
 
-	    if(std::none_of(filters.begin(), filters.end(), [&](std::unique_ptr<FormSerializer<T>>& filter)
+		bool hasBeenHandled = false;
+	    for(auto& filter : filters)
 	    {
 	        if (elem.actualForm && filter->Condition(elem.actualForm)) {
 	            serializer->StartWritingSection();
 	            serializer->Write<char>(1);
 	            filter->Serialize(serializer, elem.actualForm);
 	            serializer->finishWritingSection();
-	            return true;
+	            hasBeenHandled = true;
 	        }
-		    return false;
-	    }))
+	    }
+
+		if(!hasBeenHandled)
 	    {
 	        serializer->StartWritingSection();
 	        serializer->Write<char>(0);

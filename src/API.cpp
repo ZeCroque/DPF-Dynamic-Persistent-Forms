@@ -28,7 +28,7 @@ namespace DPF
 
 	void LoadCache(const SKSE::MessagingInterface::Message* inMessage) {
 		std::string name = static_cast<char*>(inMessage->data);
-		name = name.substr(0, name.size() - 3).append("." + coSaveExtension);
+		name = name.substr(0, name.size() - 3).append(coSaveExtension);
 		FileReader fileReader(name, std::ios::in | std::ios::binary);
 
 	    if (!fileReader.IsOpen()) {
