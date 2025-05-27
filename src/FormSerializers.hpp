@@ -28,24 +28,24 @@ namespace DPF
 	    	serializer->WriteString(sourceQuest->GetFormEditorID());
 
 			//Aliases
-			serializer->Write(sourceQuest->aliases.size());
+			serializer->Write<size_t>(sourceQuest->aliases.size());
 			for(auto* alias : sourceQuest->aliases)
 			{
 				const auto typeId = alias->GetVMTypeID();
-				serializer->Write(typeId);
+				serializer->Write<RE::VMTypeID>(typeId);
 				if(typeId == RE::BGSRefAlias::VMTYPEID) // TODO support other types
 				{
 					auto* refAlias = reinterpret_cast<RE::BGSRefAlias*>(alias);
 					serializer->WriteFormRef(refAlias->fillData.forced.forcedRef.get().get());
 				}
-				serializer->Write(alias->aliasID);
+				serializer->Write<uint32_t>(alias->aliasID);
 				serializer->WriteString(std::string(alias->aliasName).c_str());
 			}
 
-			serializer->Write(sourceQuest->data.questDelayTime);
-			serializer->Write(sourceQuest->data.flags);
-			serializer->Write(sourceQuest->data.priority);
-			serializer->Write(sourceQuest->data.questType);
+			serializer->Write<float>(sourceQuest->data.questDelayTime);
+			serializer->Write<REX::EnumSet<RE::QuestFlag, std::uint16_t>>(sourceQuest->data.flags);
+			serializer->Write<int8_t>(sourceQuest->data.priority);
+			serializer->Write<REX::EnumSet<RE::QUEST_DATA::Type, std::uint8_t>>(sourceQuest->data.questType);
 	    }
 	}
 	template<class T> void QuestSerializer<T>::Deserialize(Serializer<T>* serializer, RE::TESForm* form) {
@@ -55,7 +55,7 @@ namespace DPF
 	        target->SetFormEditorID(serializer->ReadString().c_str());
 
 			//Aliases
-			const int aliasCount = serializer->Read<int>();
+			const int aliasCount = serializer->Read<size_t>();
 			target->aliasAccessLock.LockForWrite();
 			for(auto i = 0; i < aliasCount; ++i)
 			{
