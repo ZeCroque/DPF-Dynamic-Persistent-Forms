@@ -42,10 +42,7 @@ namespace DPF
 				serializer->WriteString(std::string(alias->aliasName).c_str());
 			}
 
-			serializer->Write<float>(sourceQuest->data.questDelayTime);
-			serializer->Write<REX::EnumSet<RE::QuestFlag, std::uint16_t>>(sourceQuest->data.flags);
-			serializer->Write<int8_t>(sourceQuest->data.priority);
-			serializer->Write<REX::EnumSet<RE::QUEST_DATA::Type, std::uint8_t>>(sourceQuest->data.questType);
+			serializer->Write<RE::QUEST_DATA>(sourceQuest->data);
 	    }
 	}
 	template<class T> void QuestSerializer<T>::Deserialize(Serializer<T>* serializer, RE::TESForm* form) {
@@ -79,10 +76,7 @@ namespace DPF
 			}
 			target->aliasAccessLock.UnlockForWrite();
 
-			target->data.questDelayTime = serializer->Read<float>();
-			target->data.flags = serializer->Read<REX::EnumSet<RE::QuestFlag, std::uint16_t>>();
-			target->data.priority = serializer->Read<int8_t>();
-			target->data.questType = serializer->Read<REX::EnumSet<RE::QUEST_DATA::Type, std::uint8_t>>();
+			target->data = serializer->Read<RE::QUEST_DATA>();
 	    }
 	}
 	template<class T> bool QuestSerializer<T>::Condition(RE::TESForm* form) { return form->As<RE::TESQuest>(); }
