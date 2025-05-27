@@ -76,6 +76,7 @@ namespace DPF
 	    FileWriter(const std::string& filename, std::ios_base::openmode _Mode = std::ios_base::out);
 	    ~FileWriter();
 	    bool IsOpen();
+		void Close();
 
 	    template <class T>
 	    T ReadImplementation();

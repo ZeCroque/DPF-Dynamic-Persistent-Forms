@@ -1,4 +1,4 @@
-#include "FileSystem.h"
+#include "DPF/FileSystem.h"
 
 //From skse64_common/skse_version.h & skse64/Serialization.h
 
@@ -103,12 +103,17 @@ namespace DPF
 	    }
 	}
 	FileWriter::~FileWriter() {
-	    if (fileStream.is_open()) {
-	        fileStream.close();
-	    }
+		Close();
 	}
 
 	bool FileWriter::IsOpen() { return fileStream.is_open(); }
+
+	void FileWriter::Close()
+	{
+		if (fileStream.is_open()) {
+	        fileStream.close();
+	    }
+	}
 
 	FileReader::FileReader(const std::string& filename, std::ios_base::openmode _Mode) {
 	    fileStream.open(MakeSavePath(filename), _Mode);

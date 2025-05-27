@@ -37,11 +37,12 @@ configure_file(
 
 set(PUBLIC_HEADERS
 	${PUBLIC_HEADER_DIR}/API.h
+	${PUBLIC_HEADER_DIR}/FileSystem.h
+	${PUBLIC_HEADER_DIR}/FileSystem.hpp
 )
 
 set(PRIVATE_HEADERS
 	${SOURCE_DIR}/PCH.h
-	${SOURCE_DIR}/FileSystem.h
 	${SOURCE_DIR}/FormCreator.h
 	${SOURCE_DIR}/FormRecord.h
 	${SOURCE_DIR}/FormRecordSerializer.h
@@ -50,7 +51,6 @@ set(PRIVATE_HEADERS
 )
 
 set(HPP
-	${SOURCE_DIR}/FileSystem.hpp
 	${SOURCE_DIR}/FormRecordSerializer.hpp
 	${SOURCE_DIR}/FormSerializers.hpp
 )
@@ -69,6 +69,7 @@ set(SOURCES
 )
 
 set_source_files_properties(${HPP} PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${PUBLIC_HEADER_DIR}/FormRecordSerializer.hpp PROPERTIES HEADER_FILE_ONLY TRUE)
 
 configure_file(
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in"

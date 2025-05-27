@@ -9,5 +9,6 @@ namespace DPF
 
 	extern std::map<RE::FormID, FormRecord> formData;
 
+	RE::TESForm* GetDynamicForm(RE::FormID);
 	void UpdateId();
 }

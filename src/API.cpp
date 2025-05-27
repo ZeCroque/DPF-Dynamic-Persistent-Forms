@@ -1,7 +1,7 @@
 #include "DPF/API.h"
 
 #include "FormCreator.h"
-#include "FileSystem.h"
+#include "DPF/FileSystem.h"
 #include "FormRecordSerializer.h"
 
 namespace DPF
@@ -14,29 +14,39 @@ namespace DPF
 		coSaveExtension = inCoSaveExtension;
 	}
 
-	void SaveCache(const SKSE::MessagingInterface::Message* inMessage) {
+	std::unique_ptr<FileWriter> fileWriter;
+	FileWriter* SaveCache(const SKSE::MessagingInterface::Message* inMessage, bool inKeepFileOpen) {
 		std::string name = static_cast<char*>(inMessage->data);
 		name = name.append("." + coSaveExtension);
-	    FileWriter fileWriter(name, std::ios::out | std::ios::binary | std::ios::trunc);
 
-	    if (!fileWriter.IsOpen()) {
-	        return;
+	    fileWriter.reset(new FileWriter(name, std::ios::out | std::ios::binary | std::ios::trunc));
+	    if (!fileWriter->IsOpen()) {
+	        return nullptr;
 	    }
 
-	    StoreAllFormRecords(&fileWriter);
+	    StoreAllFormRecords(fileWriter.get());
+
+		if(!inKeepFileOpen)
+		{
+			fileWriter.release();
+		}
+
+		return fileWriter.get();
 	}
 
-	void LoadCache(const SKSE::MessagingInterface::Message* inMessage) {
+	std::unique_ptr<FileReader> fileReader;
+	FileReader* LoadCache(const SKSE::MessagingInterface::Message* inMessage) {
 		std::string name = static_cast<char*>(inMessage->data);
 		name = name.substr(0, name.size() - 3).append(coSaveExtension);
-		FileReader fileReader(name, std::ios::in | std::ios::binary);
+		fileReader.reset(new FileReader(name, std::ios::in | std::ios::binary));
 
-	    if (!fileReader.IsOpen()) {
-	        return;
+	    if (!fileReader->IsOpen()) {
+	        return nullptr;
 	    }
-	    RestoreAllFormRecords(&fileReader);
+	    RestoreAllFormRecords(fileReader.get());
 
 	    UpdateId();
+		return fileReader.get();
 	}
 
 	void DeleteCache(const SKSE::MessagingInterface::Message* inMessage) {
@@ -48,5 +58,10 @@ namespace DPF
 	RE::TESForm* CreateForm(RE::TESForm* inModelForm)
 	{
 		return AddForm(inModelForm);
+	}
+
+	RE::TESForm* GetForm(RE::FormID inFormId)
+	{
+		return GetDynamicForm(inFormId);
 	}
 }
