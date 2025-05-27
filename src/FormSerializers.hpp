@@ -25,7 +25,27 @@ namespace DPF
 	    auto sourceQuest = form->As<RE::TESQuest>();
 	    if (sourceQuest) 
 	    {
-	         serializer->WriteString(sourceQuest->GetFormEditorID());
+	    	serializer->WriteString(sourceQuest->GetFormEditorID());
+
+			//Aliases
+			serializer->Write(sourceQuest->aliases.size());
+			for(auto* alias : sourceQuest->aliases)
+			{
+				const auto typeId = alias->GetVMTypeID();
+				serializer->Write(typeId);
+				if(typeId == RE::BGSRefAlias::VMTYPEID) // TODO support other types
+				{
+					auto* refAlias = reinterpret_cast<RE::BGSRefAlias*>(alias);
+					serializer->WriteFormRef(refAlias->fillData.forced.forcedRef.get().get());
+				}
+				serializer->Write(alias->aliasID);
+				serializer->WriteString(std::string(alias->aliasName).c_str());
+			}
+
+			serializer->Write(sourceQuest->data.questDelayTime);
+			serializer->Write(sourceQuest->data.flags);
+			serializer->Write(sourceQuest->data.priority);
+			serializer->Write(sourceQuest->data.questType);
 	    }
 	}
 	template<class T> void QuestSerializer<T>::Deserialize(Serializer<T>* serializer, RE::TESForm* form) {
@@ -33,6 +53,36 @@ namespace DPF
 	    if (target) 
 	    {
 	        target->SetFormEditorID(serializer->ReadString().c_str());
+
+			//Aliases
+			const int aliasCount = serializer->Read<int>();
+			target->aliasAccessLock.LockForWrite();
+			for(auto i = 0; i < aliasCount; ++i)
+			{
+				RE::BGSBaseAlias* createdAlias = nullptr;
+				if(serializer->Read<RE::VMTypeID>() == RE::BGSRefAlias::VMTYPEID)
+				{
+					auto* refAlias =  RE::BGSBaseAlias::Create<RE::BGSRefAlias>();
+					refAlias->fillType = RE::BGSBaseAlias::FILL_TYPE::kForced;
+					refAlias->owningQuest = target;
+					refAlias->fillData.forced = RE::BGSRefAlias::ForcedFillData{reinterpret_cast<RE::TESObjectREFR*>(serializer->ReadFormRef())->CreateRefHandle()};
+
+					createdAlias = refAlias;
+					target->aliases.push_back(createdAlias);
+				}
+
+				if(createdAlias)
+				{
+					createdAlias->aliasID = serializer->Read<uint32_t>();
+					createdAlias->aliasName = serializer->ReadString();
+				}
+			}
+			target->aliasAccessLock.UnlockForWrite();
+
+			target->data.questDelayTime = serializer->Read<float>();
+			target->data.flags = serializer->Read<REX::EnumSet<RE::QuestFlag, std::uint16_t>>();
+			target->data.priority = serializer->Read<int8_t>();
+			target->data.questType = serializer->Read<REX::EnumSet<RE::QUEST_DATA::Type, std::uint8_t>>();
 	    }
 	}
 	template<class T> bool QuestSerializer<T>::Condition(RE::TESForm* form) { return form->As<RE::TESQuest>(); }
