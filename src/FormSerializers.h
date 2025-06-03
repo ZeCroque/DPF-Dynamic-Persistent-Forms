@@ -1,6 +1,6 @@
 #pragma once
 
-//Thanks to David Mazières (https://www.scs.stanford.edu/~dm/blog/va-opt.html)
+//Thanks to David Mazieres (https://www.scs.stanford.edu/~dm/blog/va-opt.html)
 #define PARENS ()
 
 #define EXPAND(...) EXPAND4(EXPAND4(EXPAND4(EXPAND4(__VA_ARGS__))))

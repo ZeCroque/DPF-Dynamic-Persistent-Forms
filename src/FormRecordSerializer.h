@@ -13,7 +13,7 @@ namespace DPF
 
 	template <typename T> static void RestoreFormRecordData(Serializer<T>* serializer, FormRecord& instance);
 
-	template <typename T> static bool RestoreFormRecord(Serializer<T>* serializer, uint32_t i);
+	template <typename T> static bool RestoreFormRecord(Serializer<T>* serializer);
 
 	template <typename T> bool RestoreAllFormRecords(Serializer<T>* serializer);
 }

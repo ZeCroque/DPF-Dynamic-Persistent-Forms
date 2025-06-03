@@ -78,7 +78,7 @@ namespace DPF
 	}
 
 	template <typename T>
-	bool RestoreFormRecord(Serializer<T>* serializer, uint32_t i) {
+	bool RestoreFormRecord(Serializer<T>* serializer) {
 	    serializer->startReadingSection();
 	    auto deleted = serializer->Read<char>();
 
@@ -129,7 +129,7 @@ namespace DPF
 	    uint32_t sizeData = serializer->Read<uint32_t>();
 
 	    for (uint32_t i = 0; i < sizeData; i++) {
-	        if (RestoreFormRecord(serializer, i)) {
+	        if (RestoreFormRecord(serializer)) {
 	            formRecordCreated = true;
 	        }
 	    }

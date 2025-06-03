@@ -175,7 +175,7 @@ namespace DPF
         }
         else if (modId == 0xfe) {
             auto lightId = (formId >> 12) & 0xFFF;
-            auto file = dataHandler->LookupLoadedLightModByIndex(lightId);
+            auto file = dataHandler->LookupLoadedLightModByIndex(static_cast<uint16_t>(lightId));
             if (file) {
                 auto localId = formId & 0xFFF;
                 std::string fileName = file->fileName;
@@ -192,7 +192,7 @@ namespace DPF
             Write<uint32_t>(formId);
         }
         else {
-            auto file = dataHandler->LookupLoadedModByIndex(modId);
+            auto file = dataHandler->LookupLoadedModByIndex(static_cast<uint8_t>(modId));
             if (file) {
                 auto localId = formId & 0xFFFFFF;
                 std::string fileName = file->fileName;

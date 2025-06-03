@@ -52,7 +52,7 @@ namespace DPF
 	        target->SetFormEditorID(serializer->ReadString().c_str());
 
 			//Aliases
-			const int aliasCount = serializer->Read<size_t>();
+			const size_t aliasCount = serializer->Read<size_t>();
 			target->aliasAccessLock.LockForWrite();
 			for(auto i = 0; i < aliasCount; ++i)
 			{
