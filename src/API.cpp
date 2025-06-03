@@ -8,10 +8,12 @@ namespace DPF
 {
 	std::string coSaveExtension = "dpf";
 
-	void Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension)
+	bool Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension)
 	{
 	    firstFormId = lastFormId = ReadFirstFormIdFromESP(inFormId, inPluginName);
 		coSaveExtension = inCoSaveExtension;
+
+		return firstFormId != 0xFF >> 24;
 	}
 
 	std::unique_ptr<FileWriter> fileWriter;

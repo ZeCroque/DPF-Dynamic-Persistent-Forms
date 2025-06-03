@@ -4,7 +4,7 @@
 
 namespace DPF
 {
-	void Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension);
+	bool Init(RE::FormID inFormId, const std::string& inPluginName, const std::string& inCoSaveExtension);
 
 	FileWriter* SaveCache(const SKSE::MessagingInterface::Message* inMessage, bool inKeepFileOpen = false);
 
