@@ -112,6 +112,12 @@ namespace DPF
 	        form->SetFormID(id, false);
 	        instance.Undelete(form, baseForm->GetFormType());
 	    }
+
+		if(form && modelForm)
+		{
+			 formData[id].modelForm = modelForm;
+		}
+
 	    return form != nullptr;
 	}
 
