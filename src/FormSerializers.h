@@ -40,9 +40,9 @@ namespace DPF
 
 	#define REGISTER_SERIALIZERS(...) \
 	EXPAND(FOR_EACH(REGISTER_SERIALIZER, __VA_ARGS__)) \
-	template<class T> auto& GetFilters() \
+	template<class T> auto GetFilters() \
 	{ \
-	static std::vector<std::unique_ptr<FormSerializer<T>>> filters; \
+		std::list<std::unique_ptr<FormSerializer<T>>> filters; \
 	EXPAND(FOR_EACH(ADD_SERIALIZER_TO_LIST, __VA_ARGS__)) \
 	    return filters; \
 	}

@@ -36,6 +36,8 @@ namespace DPF
 
 	std::unique_ptr<FileReader> fileReader;
 	FileReader* LoadCache(const SKSE::MessagingInterface::Message* inMessage) {
+		formData.clear();
+
 		std::string name = static_cast<char*>(inMessage->data);
 		name = name.substr(0, name.size() - 3).append(coSaveExtension);
 		fileReader.reset(new FileReader(name, std::ios::in | std::ios::binary));

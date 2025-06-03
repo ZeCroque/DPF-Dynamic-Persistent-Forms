@@ -148,6 +148,10 @@ namespace DPF
             auto formId = dataHandler->LookupForm(localId, fileName)->formID;
             return formId;
         }
+        else if(fileRef == 3)
+        {
+            return Read<uint32_t>();
+        }
 
         return 0;
 
@@ -181,7 +185,12 @@ namespace DPF
             } else {
                 Write<char>(0);
             }
-        } 
+        }
+        else if (modId == 0xFF)
+        {
+	        Write<char>(3);
+            Write<uint32_t>(formId);
+        }
         else {
             auto file = dataHandler->LookupLoadedModByIndex(modId);
             if (file) {

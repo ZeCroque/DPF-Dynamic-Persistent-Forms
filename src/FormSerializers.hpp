@@ -438,7 +438,11 @@ namespace DPF
 	    if (!serializer) {
 	        return;
 	    }
-	    auto& filters = GetFilters<T>();
+	    static std::list<std::unique_ptr<FormSerializer<T>>> filters;
+		if(filters.empty())
+		{
+			filters = GetFilters<T>();
+		}
 
 	    serializer->Write<uint32_t>(static_cast<uint32_t>(filters.size()));
 
@@ -468,7 +472,11 @@ namespace DPF
 	         return;
 	     }
 
-	    auto& filters = GetFilters<T>();
+	    static std::list<std::unique_ptr<FormSerializer<T>>> filters;
+		if(filters.empty())
+		{
+			filters = GetFilters<T>();
+		}
 
 	     auto size = serializer->Read<uint32_t>();
 	     uint32_t i = 0;
