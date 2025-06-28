@@ -22,6 +22,7 @@ namespace DPF
 	}
 
 	void UpdateId() {
+		lastFormId = firstFormId - 1;
 		std::ranges::for_each((formData | std::views::values), [&](const FormRecord& item) {
 			if (item.formId > lastFormId) {
 
